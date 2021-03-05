@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "jsx": "react",
+        "allowJs": true,
+        "sourceMap": true,
+        "target": "ES6",
+        "module": "esnext",
+    },
+    "include": [
+        "./index.ts",
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ],
+}
