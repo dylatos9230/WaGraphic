@@ -1,0 +1,34 @@
+[package]
+name = "wagraphic-bg"
+version = "0.1.0"
+authors = ["dylatos"]
+edition = "2018"
+include = ["src/backend/**/*", "Cargo.toml"]
+
+[workplace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+console_error_panic_hook = "*"
+js-sys = "*"
+nalgebra = "*"
+lazy_static = "*"
+wasm-bindgen = "*"
+
+[dependencies.web-sys]
+version = "*"
+features = [
+    'Document',
+    'Element',
+    'EventTarget',
+    'HtmlCanvasElement',
+    'MouseEvent',
+    'WebGlBuffer',
+    'WebGlProgram',
+    'WebGlRenderingContext',
+    'WebGlShader',
+    'WebGlUniformLocation',
+    'Window',
+]
