@@ -6,7 +6,8 @@
         "allowJs": true,
         "sourceMap": true,
         "target": "ES6",
-        "module": "esnext",
+        "module": "ES6",
+        "esModuleInterop": true
     },
     "include": [
         "./index.ts",
