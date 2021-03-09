@@ -1,0 +1,102 @@
+use wasm_bindgen::JsCast;
+use js_sys:: WebAssembly;
+use web_sys::WebGlRenderingContext as GL;
+use web_sys::*;
+use super::super::tools;
+
+
+pub struct Color2D {
+    program: WebGlProgram,
+    rect_vertice_array_length: usize,
+    rect_vertice_buffer: WebGlBuffer,
+    u_color: WebGlUniformLocation,
+    u_opacity: WebGlUniformLocation,
+    u_transform: WebGlUniformLocation,
+}
+
+impl Color2D {
+    pub fn new(gl: &WebGlRenderingContext) -> Self {
+        let program = tools::link_program(
+            &gl,
+            super::super::shaders::vertex::color_2d::SHADER,
+            super::super::shaders::fragment::color_2d::SHADER,
+        ).unwrap();
+
+        let vertices_rect: [f32;12] = [
+            0.,1.,
+            0.,0.,
+            1.,1.,
+            1.,1.,
+            0.,0.,
+            1.,0.,
+        ];
+
+        let memory_buf = wasm_bindgen::memory()
+            .dyn_into::<WebAssembly::Memory>()
+            .unwrap()
+            .buffer();
+    
+        let vertices_loc = vertices_rect.as_ptr() as u32 / 4;
+        let vert_array = js_sys::Float32Array::new(&memory_buf).subarray(
+            vertices_loc,
+            vertices_loc + vertices_rect.len() as u32,
+        );
+        let buffer_rect = gl.create_buffer().ok_or("failed to create buffer").unwrap();
+        gl.bind_buffer(GL::ARRAY_BUFFER, Some(&buffer_rect));
+        gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &vert_array, GL::STATIC_DRAW);
+
+        Self { 
+            u_color: gl.get_uniform_location(&program, "uColor").unwrap(),
+            u_opacity: gl.get_uniform_location(&program, "uOpacity").unwrap(),
+            u_transform: gl.get_uniform_location(&program,"uTransform").unwrap(),
+            rect_vertice_array_length: vertices_rect.len(),
+            rect_vertice_buffer: buffer_rect,      
+            program:program,  
+        }
+    }
+
+    pub fn render(
+        &self,
+        gl: &GL,
+        bottom: f32,
+        top: f32,
+        left: f32,
+        right: f32,
+        canvas_height:f32,
+        canvas_width:f32,
+    ){
+        gl.use_program(Some(&self.program));
+        gl.bind_buffer(GL::ARRAY_BUFFER, Some(&self.rect_vertice_buffer));
+        gl.vertex_attrib_pointer_with_i32(0,2,GL::FLOAT, false, 0, 0);
+        gl.enable_vertex_attrib_array(0);
+
+        gl.uniform4f(
+            Some(&self.u_color),
+            0.,  //r
+            0.5, //g
+            0.5, //b
+            1.0  //a
+        );
+
+        gl.uniform1f(Some(&self.u_opacity), 1.);
+
+        let translation_mat = tools::translation_matrix(
+            2. * left / canvas_width - 1.,
+            2. * bottom / canvas_height - 1.,
+            0.,
+        );
+
+
+        let scale_mat = tools::scaling_matrix(
+            2. * (right-left) / canvas_width,
+            2. *  (top-bottom) / canvas_height,
+            0.,
+        );
+
+        let transform_mat = tools::mult_matrix_4(scale_mat, translation_mat);
+        gl.uniform_matrix4fv_with_f32_array(Some(&self.u_transform), false, &transform_mat);
+
+        gl.draw_arrays(GL::TRIANGLES, 0, (self.rect_vertice_array_length / 2) as i32);
+
+    }
+}

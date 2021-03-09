@@ -1,5 +1,7 @@
 interface CraphicClient {
     new():any;
+    update(time:number,height:number,width:number,):any;
+    render():any;
 }
 
 type WasmPromiseModule = {
@@ -12,30 +14,33 @@ const wasmWrapper = import("./pkg/")
 
 // Step one: initialize the canvas
 const webGLCanvas:HTMLCanvasElement = document.createElement("canvas");
+webGLCanvas.id = 'rustCanvas'
 const bodyEle:HTMLElement = document.querySelector('body')
-// webGLCanvas.width = 500
-// webGLCanvas.height = 500
+
+webGLCanvas.width = window.innerWidth
+webGLCanvas.height = window.innerHeight
 bodyEle.appendChild(webGLCanvas)
 const glInstance = webGLCanvas.getContext('webgl', { antialias: true})
 wasmWrapper.then(res=>{
-    // The type assertion aims at passing the type-checking.
-    const wasmModule = res as unknown as WasmPromiseModule;
-    const clientInstance= new wasmModule.Client()
-    
     if(!glInstance) {
         console.error('Failed to initialize WebGL')
         return
     }
+    // The type assertion aims at passing the type-checking.
+    const wasmModule = res as unknown as WasmPromiseModule;
+    const clientInstance= new wasmModule.Client()
+    
     glInstance.enable(glInstance.BLEND)
     glInstance.blendFunc(glInstance.SRC_ALPHA, glInstance.ONE_MINUS_SRC_ALPHA)
-
+    
     const FPS_THROTTLE = 1000.0 / 30.0 // Duration / frames
+    const initialTime = Date.now()// In ms
     let lastDrawTime = -1 // In milliseconds
 
     function render(){
         window.requestAnimationFrame(render)
         const currentTime = Date.now()
-
+        
         if (currentTime >= lastDrawTime + FPS_THROTTLE) {
             lastDrawTime = currentTime
 
@@ -47,13 +52,15 @@ wasmWrapper.then(res=>{
                 glInstance.viewport(0,0, window.innerWidth,window.innerHeight)
 
             }
-
-            // Rust Update Call
-
-            // Rust Render Call
+            let elapsedTime = currentTime - initialTime
+            clientInstance.update(elapsedTime, window.innerHeight, window.innerWidth)
+            
+            clientInstance.render()
             
         }
     }
+
+    render()
     
 })
 
