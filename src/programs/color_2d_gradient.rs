@@ -18,7 +18,7 @@ impl Color2DGradient {
         let program = tools::link_program(
             &gl,
             super::super::shaders::vertex::color_2d_gradient::SHADER,
-            super::super::shaders::fragment::color_2d_gradient::SHADER,
+            super::super::shaders::fragment::varying_color_from_vertex::SHADER,
         )
         .unwrap();
 
