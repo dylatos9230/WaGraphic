@@ -15,11 +15,11 @@ const wasmWrapper = import("./pkg/")
 // Step one: initialize the canvas
 const webGLCanvas:HTMLCanvasElement = document.createElement("canvas");
 webGLCanvas.id = 'rustCanvas'
-const bodyEle:HTMLElement = document.querySelector('body')
-
 webGLCanvas.width = window.innerWidth
 webGLCanvas.height = window.innerHeight
+const bodyEle:HTMLElement = document.querySelector('body')
 bodyEle.appendChild(webGLCanvas)
+
 const glInstance = webGLCanvas.getContext('webgl', { antialias: true})
 wasmWrapper.then(res=>{
     if(!glInstance) {
@@ -30,8 +30,6 @@ wasmWrapper.then(res=>{
     const wasmModule = res as unknown as WasmPromiseModule;
     const clientInstance= new wasmModule.Client()
     
-    glInstance.enable(glInstance.BLEND)
-    glInstance.blendFunc(glInstance.SRC_ALPHA, glInstance.ONE_MINUS_SRC_ALPHA)
     
     const FPS_THROTTLE = 1000.0 / 30.0 // Duration / frames
     const initialTime = Date.now()// In ms
