@@ -1,6 +1,13 @@
 use web_sys::WebGlRenderingContext as GL;
 use web_sys::*;
+extern crate wasm_bindgen;
+use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    pub fn log(s: &str);
+}
 
 pub fn link_program(
     gl: &WebGlRenderingContext,
@@ -56,7 +63,6 @@ fn compile_shader(
     {
         Ok(shader)
     } else {
-        
         Err(gl.get_shader_info_log(&shader)
             .unwrap_or_else(|| String::from("Unable to get shader info log")))
     }
@@ -73,12 +79,13 @@ pub fn translation_matrix(tx: f32, ty: f32, tz: f32) -> [f32; 16] {
     return_var[12] = tx;
     return_var[13] = ty;
     return_var[14] = tz;
-    
+
     return_var
 }
 
-pub fn scaling_matrix(sx: f32, sy:f32, sz:f32) -> [f32; 16] {
-    let mut return_var = [0.;16];
+pub fn scaling_matrix(sx: f32, sy: f32, sz: f32) -> [f32; 16] {
+    let mut return_var = [0.; 16];
+
     return_var[0] = sx;
     return_var[5] = sy;
     return_var[10] = sz;
@@ -86,7 +93,6 @@ pub fn scaling_matrix(sx: f32, sy:f32, sz:f32) -> [f32; 16] {
 
     return_var
 }
-
 
 pub fn mult_matrix_4(a: [f32; 16], b: [f32; 16]) -> [f32; 16] {
     let mut return_var = [0.; 16];
